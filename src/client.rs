@@ -10,11 +10,13 @@ use tracing::{error, info};
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 type HealthResult = std::result::Result<(), Box<dyn std::error::Error + Send + Sync>>;
 
+/// Initialize Vault Instance
 pub struct Vault {
     pub http_client: Client<HttpConnector>,
     pub config: Config,
 }
 
+/// Implementing the Vault instance and do some health check
 impl Vault {
     pub async fn new(config: Config) -> Result<Vault> {
         let client = Client::new();
@@ -26,6 +28,7 @@ impl Vault {
         Ok(vault)
     }
 
+    /// Health check is using hyper to get health check
     pub async fn health_check(&self) -> HealthResult {
         let vault_health_check = format!(
             "http://{}:{}/v1/sys/health",
@@ -78,6 +81,8 @@ impl Vault {
         }
     }
 
+    /// Getting secret from vault
+    /// It will use generic type and auto parsing into struct
     pub async fn get_secret<T>(self) -> Result<T>
     where
         T: DeserializeOwned,

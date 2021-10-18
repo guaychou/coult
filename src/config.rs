@@ -1,3 +1,4 @@
+/// Config struct to match the address of vault
 pub struct Config {
     pub address: &'static str,
     pub port: u16,
