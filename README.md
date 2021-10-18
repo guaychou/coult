@@ -16,10 +16,10 @@ struct Secret {
 async fn main() {
     tracing_subscriber::fmt::init();
     let config = Config::new(
-        "127.0.0.1",
-        8200,
-        "config/anjim",
-        "vault-plaintext-root-tokenzqwe",
+    "127.0.0.1",                      # Vault Host
+     8200,                            # Port
+    "config/anjim",                   # Secret Path
+    "vault-plaintext-root-tokenzqwe", # Vault Token
     );
     let vault = Vault::new(config).await.unwrap();
     let data = vault.get_secret::<Secret>().await.unwrap();
