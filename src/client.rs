@@ -40,7 +40,7 @@ impl Vault {
             .method("GET")
             .uri(vault_health_check)
             .header("content-type", "application/json")
-            .header("X-Vault-Token", self.config.token)
+            .header("X-Vault-Token", self.config.token.as_str())
             .body(Body::empty())?;
         let res = self.http_client.request(health_req).await?;
         match res.status().as_u16() {

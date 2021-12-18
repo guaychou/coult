@@ -1,18 +1,13 @@
 /// Config struct to match the address of vault
 pub struct Config {
-    pub address: &'static str,
+    pub address: String,
     pub port: u16,
-    pub config_path: &'static str,
-    pub token: &'static str,
+    pub config_path: String,
+    pub token: String,
 }
 
 impl Config {
-    pub fn new(
-        address: &'static str,
-        port: u16,
-        config_path: &'static str,
-        token: &'static str,
-    ) -> Self {
+    pub fn new(address: String, port: u16, config_path: String, token: String) -> Self {
         Self {
             address,
             port,
