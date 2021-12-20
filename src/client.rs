@@ -112,7 +112,7 @@ fn check_vault_error(status_code: StatusCode) -> VaultApiResult {
             Err(err)
         }
         _ => {
-            let err = Box::new(VaultError::VaultNotInitialized(status_code));
+            let err = Box::new(VaultError::Unknown(status_code));
             error!("{}", err.to_string());
             Err(err)
         }
