@@ -57,7 +57,7 @@ impl Vault {
         T: DeserializeOwned,
     {
         let address = format!(
-            "{}://{}:{}/v1/secret/{}",
+            "{}://{}:{}/v1/{}",
             self.config.protocol, self.config.address, self.config.port, self.config.config_path
         )
         .parse::<Uri>()
