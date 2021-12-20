@@ -16,6 +16,7 @@ struct Secret {
 async fn main() {
     tracing_subscriber::fmt::init();
     let config = Config::new(
+    "http".to_string(),                           # Vault Http Protocol http/https
     "127.0.0.1".to_string(),                      # Vault Host
      8200,                                        # Port
     "config/path".to_string(),                    # Secret Path
