@@ -32,19 +32,19 @@ pub struct VaultBuilder {
 }
 
 impl VaultBuilder {
-    fn address(&mut self, address: String) -> &mut Self {
+    pub fn address(&mut self, address: String) -> &mut Self {
         self.address = Some(address);
         self
     }
-    fn port(&mut self, port: u16) -> &mut Self {
+    pub fn port(&mut self, port: u16) -> &mut Self {
         self.port = Some(port);
         self
     }
-    fn token(&mut self, token: String) -> &mut Self {
+    pub fn token(&mut self, token: String) -> &mut Self {
         self.token = Some(token);
         self
     }
-    fn https(&mut self) -> &mut Self {
+    pub fn https(&mut self) -> &mut Self {
         self.protocol = Some("https".to_string());
         self
     }

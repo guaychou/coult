@@ -1,6 +1,6 @@
 [package]
 name = "coult"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2018"
 license = "MIT OR Apache-2.0"
 description = "Hashicorp vault secret retrival helper, using hyper and serde, and automatically parsing."
