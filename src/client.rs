@@ -49,7 +49,7 @@ impl VaultBuilder {
         self
     }
 
-    async fn build(&mut self) -> Result<Vault> {
+    pub async fn build(&mut self) -> Result<Vault> {
         if self.secret_path.is_none() {
             self.secret_path = Some(
                 self.secret_path
