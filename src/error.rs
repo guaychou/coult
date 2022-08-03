@@ -2,13 +2,13 @@ use hyper::StatusCode;
 use thiserror::Error;
 
 /// # HTTP response that maybe happen in Vault
-/// - 200	Active Node
-/// - 404   Invalid Path
-/// - 429	Standby Node
-/// - 472	Active DR Secondary Node
-/// - 473	Standby Performance Node
-/// - 501	Uninitialized
-/// - 503	Sealed
+/// - 200    Active Node
+/// - 404    Invalid Path
+/// - 429    Standby Node
+/// - 472    Active DR Secondary Node
+/// - 473    Standby Performance Node
+/// - 501    Uninitialized
+/// - 503    Sealed
 /// - Filtered only exclude 200
 
 #[derive(Error, Debug)]

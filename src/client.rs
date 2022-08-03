@@ -1,42 +1,119 @@
-use crate::config::Config;
+#![allow(dead_code)]
+
 use crate::error::VaultError;
-use crate::schema::VaultSchemaV1;
+use crate::schema::{VaultSchemaV1, VaultSchemaV2};
 use hyper::body::Buf;
 use hyper::client::HttpConnector;
 use hyper::http::StatusCode;
 use hyper::{Body, Client, Request, Uri};
 use serde::de::DeserializeOwned;
+use std::env;
 use tracing::{error, info};
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 type VaultApiResult = std::result::Result<(), Box<dyn std::error::Error + Send + Sync>>;
 
 /// Initialize Vault Instance
 pub struct Vault {
-    pub http_client: Client<HttpConnector>,
-    pub config: Config,
+    http_client: Client<HttpConnector>,
+    secret_path: Option<String>,
+    address: Option<String>,
+    port: Option<u16>,
+    token: Option<String>,
+    protocol: Option<String>,
 }
 
-/// Implementing the Vault instance and do some health check
-impl Vault {
-    pub async fn new(config: Config) -> Result<Vault> {
-        let client = Client::new();
-        let vault = Self {
-            http_client: client,
-            config: config,
+pub struct VaultBuilder {
+    http_client: Client<HttpConnector>,
+    secret_path: Option<String>,
+    address: Option<String>,
+    port: Option<u16>,
+    token: Option<String>,
+    protocol: Option<String>,
+}
+
+impl VaultBuilder {
+    fn address(&mut self, address: String) -> &mut Self {
+        self.address = Some(address);
+        self
+    }
+    fn port(&mut self, port: u16) -> &mut Self {
+        self.port = Some(port);
+        self
+    }
+    fn token(&mut self, token: String) -> &mut Self {
+        self.token = Some(token);
+        self
+    }
+    fn https(&mut self) -> &mut Self {
+        self.protocol = Some("https".to_string());
+        self
+    }
+
+    async fn build(&mut self) -> Result<Vault> {
+        if self.secret_path.is_none() {
+            self.secret_path = Some(
+                self.secret_path
+                    .as_ref()
+                    .expect("Set the secret path with secret_path function")
+                    .to_owned(),
+            )
+        }
+        if self.address.is_none() {
+            self.address = Some(env::var("VAULT_ADDR").unwrap_or_else(|_| "127.0.0.1".to_owned()))
+        }
+        if self.port.is_none() {
+            self.port = Some(
+                env::var("VAULT_PORT")
+                    .unwrap_or_else(|_| "8200".to_owned())
+                    .parse::<u16>()
+                    .unwrap(),
+            )
+        }
+        if self.token.is_none() {
+            self.token = Some(env::var("VAULT_TOKEN").expect(
+                "Please set the vault token from token method or VAULT_TOKEN environment variable",
+            ));
+        }
+        if self.protocol.is_none() {
+            self.protocol = Some(env::var("VAULT_PROTOCOL").unwrap_or_else(|_| "http".to_owned()));
+        }
+
+        let vault = Vault {
+            http_client: self.http_client.clone(),
+            secret_path: self.secret_path.clone(),
+            address: self.address.clone(),
+            port: self.port,
+            token: self.token.clone(),
+            protocol: self.protocol.clone(),
         };
         vault.health_check().await?;
         info!(
             "Health check connection to vault in {} success",
-            vault.config.address
+            vault.address.as_ref().unwrap()
         );
         Ok(vault)
     }
+}
 
+/// Implementing the Vault instance and do some health check
+impl Vault {
+    fn new() -> VaultBuilder {
+        VaultBuilder {
+            http_client: Client::new(),
+            secret_path: None,
+            address: None,
+            port: None,
+            token: None,
+            protocol: None,
+        }
+    }
     /// Health check is using hyper to get health check
     pub async fn health_check(&self) -> VaultApiResult {
         let vault_health_check = format!(
             "{}://{}:{}/v1/sys/health",
-            self.config.protocol, self.config.address, self.config.port
+            self.protocol.as_ref().unwrap(),
+            self.address.as_ref().unwrap(),
+            self.port.unwrap()
         )
         .parse::<Uri>()
         .unwrap();
@@ -44,7 +121,7 @@ impl Vault {
             .method("GET")
             .uri(vault_health_check)
             .header("content-type", "application/json")
-            .header("X-Vault-Token", self.config.token.as_str())
+            .header("X-Vault-Token", self.token.as_ref().unwrap().as_str())
             .body(Body::empty())?;
         let res = self.http_client.request(health_req).await?;
         check_vault_error(res.status())
@@ -58,7 +135,10 @@ impl Vault {
     {
         let address = format!(
             "{}://{}:{}/v1/{}",
-            self.config.protocol, self.config.address, self.config.port, self.config.config_path
+            self.protocol.as_ref().unwrap(),
+            self.address.as_ref().unwrap(),
+            self.port.unwrap(),
+            self.secret_path.as_ref().unwrap(),
         )
         .parse::<Uri>()
         .unwrap();
@@ -66,7 +146,7 @@ impl Vault {
             .method("GET")
             .uri(address)
             .header("content-type", "application/json")
-            .header("X-Vault-Token", self.config.token)
+            .header("X-Vault-Token", self.token.as_ref().unwrap())
             .body(Body::empty())?;
         let res = self.http_client.request(req).await?;
         check_vault_error(res.status())?;
@@ -74,6 +154,33 @@ impl Vault {
         let body = hyper::body::aggregate(res).await?;
         let secret: VaultSchemaV1<T> = serde_json::from_reader(body.reader())?;
         Ok(secret.data)
+    }
+
+    pub async fn get_secret_v2<T>(self) -> Result<T>
+    where
+        T: DeserializeOwned,
+    {
+        let address = format!(
+            "{}://{}:{}/v1/{}",
+            self.protocol.as_ref().unwrap(),
+            self.address.as_ref().unwrap(),
+            self.port.unwrap(),
+            self.secret_path.as_ref().unwrap(),
+        )
+        .parse::<Uri>()
+        .unwrap();
+        let req = Request::builder()
+            .method("GET")
+            .uri(address)
+            .header("content-type", "application/json")
+            .header("X-Vault-Token", self.token.as_ref().unwrap())
+            .body(Body::empty())?;
+        let res = self.http_client.request(req).await?;
+        check_vault_error(res.status())?;
+        info!("Retrieval secret from vault success");
+        let body = hyper::body::aggregate(res).await?;
+        let secret: VaultSchemaV2<T> = serde_json::from_reader(body.reader())?;
+        Ok(secret.data.data)
     }
 }
 
