@@ -63,7 +63,7 @@ impl VaultBuilder {
             )
         }
         if self.address.is_none() {
-            self.address = Some(env::var("VAULT_ADDR").unwrap_or_else(|_| "127.0.0.1".to_owned()))
+            self.address = Some(env::var("VAULT_ADDRESS").unwrap_or_else(|_| "127.0.0.1".to_owned()))
         }
         if self.port.is_none() {
             self.port = Some(
