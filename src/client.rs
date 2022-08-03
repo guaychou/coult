@@ -97,7 +97,7 @@ impl VaultBuilder {
 
 /// Implementing the Vault instance and do some health check
 impl Vault {
-    fn new() -> VaultBuilder {
+    pub fn new() -> VaultBuilder {
         VaultBuilder {
             http_client: Client::new(),
             secret_path: None,
