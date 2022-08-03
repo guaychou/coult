@@ -44,6 +44,12 @@ impl VaultBuilder {
         self.token = Some(token);
         self
     }
+
+    pub fn secret_path(&mut self, secret_path: String) -> &mut Self {
+        self.secret_path = Some(secret_path);
+        self
+    }
+
     pub fn https(&mut self) -> &mut Self {
         self.protocol = Some("https".to_string());
         self
@@ -52,10 +58,8 @@ impl VaultBuilder {
     pub async fn build(&mut self) -> Result<Vault> {
         if self.secret_path.is_none() {
             self.secret_path = Some(
-                self.secret_path
-                    .as_ref()
-                    .expect("Set the secret path with secret_path function")
-                    .to_owned(),
+                env::var("VAULT_SECRET_PATH")
+                    .expect("Set the secret path with secret_path function or VAULT_SECRET_PATH environment variable")    
             )
         }
         if self.address.is_none() {
