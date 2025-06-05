@@ -1,4 +1,8 @@
 name: Publish Crate
+on:
+  push:
+    branches:
+      - master
 jobs:
   publish:
     name: Build, Test & Publish
