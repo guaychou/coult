@@ -20,7 +20,7 @@
 //! async fn main() {
 //!   tracing_subscriber::fmt::init();
 //!   let vault = Vault::new().build().await.unwrap();
-//!   let data = vault.get_secret::<Secret>().await.unwrap(); // for v1, get_secret_v2
+//!   let data = vault.get_secret_v2::<Secret>().await.unwrap(); // for v1, get_secret_v2
 //!   println!("{:?}", data)
 //!}
 //! ```

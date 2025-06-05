@@ -38,8 +38,8 @@ pub struct VaultBuilder {
 }
 
 impl VaultBuilder {
-    pub fn address(&mut self, address: String) -> &mut Self {
-        self.address = Some(address);
+    pub fn address(&mut self, address: &str) -> &mut Self {
+        self.address = Some(address.to_string());
         self
     }
 
@@ -48,13 +48,13 @@ impl VaultBuilder {
         self
     }
 
-    pub fn token(&mut self, token: String) -> &mut Self {
-        self.token = Some(token);
+    pub fn token(&mut self, token: &str) -> &mut Self {
+        self.token = Some(token.to_string());
         self
     }
 
-    pub fn secret_path(&mut self, secret_path: String) -> &mut Self {
-        self.secret_path = Some(secret_path);
+    pub fn secret_path(&mut self, secret_path: &str) -> &mut Self {
+        self.secret_path = Some(secret_path.to_string());
         self
     }
 
@@ -63,8 +63,8 @@ impl VaultBuilder {
         self
     }
 
-    pub fn protocol(&mut self, proto: String) -> &mut Self {
-        self.protocol = Some(proto);
+    pub fn protocol(&mut self, proto: &str) -> &mut Self {
+        self.protocol = Some(proto.to_string());
         self
     }
 
