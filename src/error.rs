@@ -21,7 +21,9 @@ pub enum VaultError {
     VaultStandby(StatusCode),
     #[error("Vault is in active DR secondary node, connection to vault failed | status code: {0}")]
     VaultActiveDRsecondaryNode(StatusCode),
-    #[error("Vault is in active standby performance node, connection to vault failed | status code: {0}")]
+    #[error(
+        "Vault is in active standby performance node, connection to vault failed | status code: {0}"
+    )]
     VaultStandbyPerformanceNode(StatusCode),
     #[error("Your request is going to invalid path | status code: {0}")]
     VaultInvalidPath(StatusCode),
